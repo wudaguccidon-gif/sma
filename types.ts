@@ -36,7 +36,8 @@ export interface AuditResult {
   sentiment: SentimentAnalysis[];
   timestamp: string;
   sourceUrls?: string[];
-  visualUrl?: string; // New field for AI generated visual
+  visualUrl?: string; 
+  videoUrl?: string; // New: Cinematic briefing video
 }
 
 export enum AppView {

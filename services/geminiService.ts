@@ -11,9 +11,36 @@ const extractJson = (text: string): any => {
     }
     return JSON.parse(text);
   } catch (e) {
-    console.error("JSON Parse Error:", e, "Raw Text:", text);
-    throw new Error("Strategic intelligence extraction failed. Please re-run the probe.");
+    console.error("JSON Parse Error:", e);
+    throw new Error("Strategic intelligence extraction failed.");
   }
+};
+
+export const generateBriefingVideo = async (prompt: string): Promise<string> => {
+    // Veo requires a fresh instance to ensure the most up-to-date key from selection
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    let operation = await ai.models.generateVideos({
+        model: 'veo-3.1-fast-generate-preview',
+        prompt: `Cinematic strategic intelligence brief. ${prompt}. High-end commercial style, dark tech aesthetic, blue and purple lighting, abstract 3D data visualization, slow camera movement, 1080p.`,
+        config: {
+            numberOfVideos: 1,
+            resolution: '720p',
+            aspectRatio: '16:9'
+        }
+    });
+
+    while (!operation.done) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        operation = await ai.operations.getVideosOperation({ operation: operation });
+    }
+
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) throw new Error("Video download link not generated.");
+    
+    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 };
 
 export const generateCompetitorImage = async (apiKey: string, domain: string, industry: string): Promise<string> => {
@@ -22,7 +49,7 @@ export const generateCompetitorImage = async (apiKey: string, domain: string, in
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: {
-                parts: [{ text: `High-end cinematic strategic market visual for ${domain} in the ${industry} sector. Abstract architectural data flows, minimalist dark mode tech aesthetic, deep charcoal and electric indigo highlights, professional commercial photography style, ultra-detailed.` }]
+                parts: [{ text: `High-end cinematic strategic market visual for ${domain} in the ${industry} sector. Abstract architectural data flows, minimalist dark mode tech aesthetic, professional commercial photography style.` }]
             },
             config: {
                 imageConfig: { aspectRatio: "16:9" }
@@ -48,17 +75,12 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
   const ai = new GoogleGenAI({ apiKey });
   const modelName = 'gemini-3-flash-preview';
 
-  const systemInstruction = `You are a World-Class Strategic Market Auditor and Forensic Intelligence Specialist. 
-  Your mission is to perform a deep forensic audit and provide a high-fidelity report in JSON format.
-  
-  BE SPECIFIC, AGGRESSIVE, AND ACTIONABLE.`;
-
   try {
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `Perform an exhaustive forensic tactical audit for: ${domain}.`,
+      contents: `Perform an exhaustive forensic tactical audit for: ${domain}. Focus on SaaS infrastructure and feature gaps.`,
       config: {
-        systemInstruction,
+        systemInstruction: "You are a World-Class Strategic Market Auditor. Respond in high-fidelity JSON.",
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 8000 },
@@ -119,8 +141,6 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     });
 
     const parsedData = extractJson(response.text || "{}");
-    
-    // Trigger visual generation in parallel
     const visualUrl = await generateCompetitorImage(apiKey, domain, parsedData.industry || "Technology");
 
     return {
@@ -138,7 +158,6 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
       visualUrl
     };
   } catch (error: any) {
-    console.error("Forensic Audit Error:", error);
-    throw new Error(error.message.includes("API_KEY") ? error.message : `Strategic probe failed: ${error.message}`);
+    throw new Error(`Strategic probe failed: ${error.message}`);
   }
 };

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuditResult } from '../types';
 import SWOTCard from './SWOTCard';
 import Battlecard from './Battlecard';
 import FeatureMatrix from './FeatureMatrix';
 import ReviewAnalysis from './ReviewAnalysis';
 import TechStack from './TechStack';
+import VideoBriefing from './VideoBriefing';
 
 interface AuditResultsProps {
   audit: AuditResult;
@@ -15,6 +16,8 @@ interface AuditResultsProps {
 }
 
 const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChange, onPrint, hideTabs = false }) => {
+  const [currentAudit, setCurrentAudit] = useState(audit);
+
   const tabs = [
     { id: 'overview', label: 'Summary' },
     { id: 'vision', label: 'Tactical Visual' },
@@ -24,20 +27,35 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
     { id: 'tech', label: 'Tech Stack' },
   ];
 
+  const handleVideoGenerated = (url: string) => {
+      const updatedAudit = { ...currentAudit, videoUrl: url };
+      setCurrentAudit(updatedAudit);
+      // Update parent or local storage if needed
+      const saved = localStorage.getItem('competeai_audits');
+      if (saved) {
+          const audits = JSON.parse(saved);
+          const index = audits.findIndex((a: any) => a.id === audit.id);
+          if (index !== -1) {
+              audits[index] = updatedAudit;
+              localStorage.setItem('competeai_audits', JSON.stringify(audits));
+          }
+      }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-8">
       {/* Hero Visual Section */}
-      {audit.visualUrl && (
+      {currentAudit.visualUrl && (
         <div className="relative w-full h-64 md:h-80 rounded-[2.5rem] overflow-hidden border border-slate-800 shadow-2xl mb-8 group">
-          <img src={audit.visualUrl} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100" alt="Strategic Visual" />
+          <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100" alt="Strategic Visual" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
           <div className="absolute bottom-10 left-10">
             <div className="flex items-center space-x-3 mb-2">
                 <div className="h-1 w-8 bg-indigo-500 rounded-full"></div>
                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Strategic Vector 01</span>
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tighter uppercase">{audit.companyName}</h1>
-            <p className="text-slate-400 font-bold text-sm tracking-widest uppercase mt-1 opacity-70">{audit.industry} Intelligence Report</p>
+            <h1 className="text-4xl font-black text-white tracking-tighter uppercase">{currentAudit.companyName}</h1>
+            <p className="text-slate-400 font-bold text-sm tracking-widest uppercase mt-1 opacity-70">{currentAudit.industry} Intelligence Report</p>
           </div>
         </div>
       )}
@@ -47,20 +65,20 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 bg-black border border-slate-800 rounded-xl flex items-center justify-center p-2">
             <img 
-              src={`https://logo.clearbit.com/${audit.domain}`} 
+              src={`https://logo.clearbit.com/${currentAudit.domain}`} 
               className="w-full h-full object-contain rounded-md"
-              onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${audit.companyName}&background=000&color=fff` }}
-              alt={audit.companyName}
+              onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${currentAudit.companyName}&background=000&color=fff` }}
+              alt={currentAudit.companyName}
             />
           </div>
           <div>
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{audit.companyName}</h2>
+              <h2 className="text-2xl font-bold text-white tracking-tight">{currentAudit.companyName}</h2>
               <span className="px-2 py-0.5 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {audit.industry}
+                {currentAudit.industry}
               </span>
             </div>
-            <p className="text-slate-500 text-sm font-medium mono mt-1">{audit.domain}</p>
+            <p className="text-slate-500 text-sm font-medium mono mt-1">{currentAudit.domain}</p>
           </div>
         </div>
 
@@ -109,19 +127,19 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
                </div>
                <div className="p-8">
                   <p className="text-slate-300 text-lg leading-relaxed font-medium tracking-tight">
-                    {audit.summary}
+                    {currentAudit.summary}
                   </p>
                </div>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <SWOTCard swot={audit.swot} />
+              <SWOTCard swot={currentAudit.swot} />
               <div className="space-y-8">
-                <TechStack stack={audit.techStack} />
+                <TechStack stack={currentAudit.techStack} />
                 <div className="bg-white text-black p-8 rounded-xl">
                    <p className="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-50">High-Impact Recommendation</p>
                    <p className="text-lg font-bold italic leading-snug">
-                     "{audit.battlecard.howToWin[0]}"
+                     "{currentAudit.battlecard.howToWin[0]}"
                    </p>
                 </div>
               </div>
@@ -130,22 +148,13 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
         )}
 
         {activeTab === 'vision' && (
-           <div className="space-y-8 animate-in zoom-in-95 duration-500">
-             <div className="bg-black border border-slate-800 rounded-[2.5rem] p-4 overflow-hidden shadow-2xl">
-               <img src={audit.visualUrl} className="w-full rounded-[2rem] shadow-inner" alt="Strategic Visual Large" />
-             </div>
-             <div className="glass p-10 rounded-[2rem] border-white/5 text-center">
-                <p className="text-slate-400 font-medium italic text-lg leading-relaxed">
-                  "Visualizing the competitive landscape to uncover hidden operational vectors in the {audit.industry} space."
-                </p>
-             </div>
-           </div>
+           <VideoBriefing audit={currentAudit} onVideoGenerated={handleVideoGenerated} />
         )}
 
-        {activeTab === 'battlecard' && <Battlecard data={audit.battlecard} companyName={audit.companyName} />}
-        {activeTab === 'features' && <FeatureMatrix features={audit.featureGap} />}
-        {activeTab === 'sentiment' && <ReviewAnalysis sentiment={audit.sentiment} />}
-        {activeTab === 'tech' && <TechStack stack={audit.techStack} isLarge />}
+        {activeTab === 'battlecard' && <Battlecard data={currentAudit.battlecard} companyName={currentAudit.companyName} />}
+        {activeTab === 'features' && <FeatureMatrix features={currentAudit.featureGap} />}
+        {activeTab === 'sentiment' && <ReviewAnalysis sentiment={currentAudit.sentiment} />}
+        {activeTab === 'tech' && <TechStack stack={currentAudit.techStack} isLarge />}
       </div>
     </div>
   );
