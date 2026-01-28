@@ -4,7 +4,6 @@ import { AuditResult } from "../types";
 
 const extractJson = (text: string): any => {
   try {
-    // Attempt to find the JSON block if the model included conversational filler
     const firstOpen = text.indexOf('{');
     const lastClose = text.lastIndexOf('}');
     if (firstOpen !== -1 && lastClose !== -1) {
@@ -19,10 +18,13 @@ const extractJson = (text: string): any => {
 };
 
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY;
   
-  // Using Gemini 3 Flash for the absolute best performance-to-cost ratio.
-  // It's much faster and cheaper than Pro but highly capable with Thinking Mode.
+  if (!apiKey || apiKey === "undefined" || apiKey.length < 5) {
+    throw new Error("CRITICAL: API_KEY is missing from environment. Please add 'API_KEY' to your Environment Variables in Settings.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const modelName = 'gemini-3-flash-preview';
 
   const systemInstruction = `You are a World-Class Strategic Market Auditor and Forensic Intelligence Specialist. 
@@ -45,7 +47,6 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
         systemInstruction,
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
-        // Keeping the thinking budget high ensures Flash acts with Pro-level strategy
         thinkingConfig: { thinkingBudget: 8000 },
         responseSchema: {
           type: Type.OBJECT,
@@ -124,12 +125,15 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     };
   } catch (error: any) {
     console.error("Forensic Audit Error:", error);
-    throw new Error(`Strategic probe failed: ${error.message}`);
+    throw new Error(error.message.includes("API_KEY") ? error.message : `Strategic probe failed: ${error.message}`);
   }
 };
 
 export const generateCompetitorImage = async (prompt: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200";
+    
+    const ai = new GoogleGenAI({ apiKey });
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
