@@ -21,8 +21,9 @@ const extractJson = (text: string): any => {
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // Using Gemini 3 Pro for world-class strategic reasoning
-  const modelName = 'gemini-3-pro-preview';
+  // Using Gemini 3 Flash for the absolute best performance-to-cost ratio.
+  // It's much faster and cheaper than Pro but highly capable with Thinking Mode.
+  const modelName = 'gemini-3-flash-preview';
 
   const systemInstruction = `You are a World-Class Strategic Market Auditor and Forensic Intelligence Specialist. 
   Your mission is to perform a deep forensic audit and provide a high-fidelity report in JSON format.
@@ -44,7 +45,7 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
         systemInstruction,
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
-        // Higher thinking budget for deeper strategic synthesis of search results
+        // Keeping the thinking budget high ensures Flash acts with Pro-level strategy
         thinkingConfig: { thinkingBudget: 8000 },
         responseSchema: {
           type: Type.OBJECT,
