@@ -27,7 +27,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Save audits to localStorage whenever they change
+  // Save audits to localStorage
   useEffect(() => {
     localStorage.setItem('competeai_audits', JSON.stringify(audits));
   }, [audits]);
@@ -65,6 +65,7 @@ const App: React.FC = () => {
     }, 500);
   };
 
+  // Printing State
   if (isPrinting) {
     const auditsToPrint = printContext === 'all' ? audits : (selectedAudit ? [selectedAudit] : []);
     return (
@@ -88,8 +89,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
-      {/* Sidebar - Hidden on mobile, visible on desktop */}
+    <div className="flex h-screen overflow-hidden bg-black">
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar 
           currentView={currentView} 
@@ -103,11 +103,10 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* Mobile Drawer */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setIsMenuOpen(false)}>
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"></div>
-          <div className="relative flex flex-col w-full max-w-xs h-full bg-slate-950 border-r border-white/5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+          <div className="relative flex flex-col w-full max-w-xs h-full bg-black border-r border-slate-800" onClick={(e) => e.stopPropagation()}>
             <Sidebar 
               currentView={currentView} 
               setView={(view) => { setCurrentView(view); setIsMenuOpen(false); }} 
@@ -122,7 +121,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content Area */}
       <div className="flex flex-col flex-1 w-0 overflow-hidden relative z-10 bg-grid">
         <Navbar 
           onNewAudit={() => { setCurrentView(AppView.NEW_AUDIT); setIsMenuOpen(false); }} 
