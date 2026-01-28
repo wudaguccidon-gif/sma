@@ -11,16 +11,16 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
   const [domain, setDomain] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [logs, setLogs] = useState<string[]>([]);
 
   const loadingSteps = [
-    "Connecting to Gemini Intelligence Network...",
-    "Deploying forensic search probes...",
-    "Extracting technical fingerprints...",
-    "Analyzing market sentiment datasets...",
-    "Compiling SWOT intelligence matrix...",
-    "Generating offensive battlecard sequence...",
-    "Finalizing decryption..."
+    "Establishing secure connection to Gemini Flash-3...",
+    "Injecting forensic web crawlers...",
+    "Analyzing target DNS records and infrastructure...",
+    "Retrieving public sentiment datasets...",
+    "Synthesizing competitive SWOT analysis...",
+    "Generating tactical sales battlecards...",
+    "Finalizing intelligence report..."
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,12 +31,13 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
     
     setLoading(true);
     setError(null);
+    setLogs(["Initialising probe for: " + cleanDomain]);
     
     let step = 0;
     const interval = setInterval(() => {
-      setStatusMessage(loadingSteps[step % loadingSteps.length]);
+      setLogs(prev => [...prev.slice(-10), loadingSteps[step % loadingSteps.length]]);
       step++;
-    }, 2000);
+    }, 1500);
 
     try {
       const result = await performCompetitorAudit(cleanDomain);
@@ -44,7 +45,7 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
       onComplete(result);
     } catch (err: any) {
       clearInterval(interval);
-      setError(err.message || "Audit failed. Target domain might be protected or invalid.");
+      setError(err.message || "Strategic probe failed. Check target connectivity.");
     } finally {
       setLoading(false);
     }
@@ -52,89 +53,87 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto py-32 px-4 text-center">
-        <div className="relative inline-block mb-12">
-            <div className="w-24 h-24 border-4 border-slate-900 border-t-indigo-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <i className="fa-solid fa-bolt text-indigo-500 text-2xl animate-pulse"></i>
+      <div className="max-w-3xl mx-auto py-20 px-4">
+        <div className="border border-slate-800 rounded-xl overflow-hidden bg-black shadow-2xl">
+          <div className="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex space-x-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50"></div>
             </div>
-        </div>
-        <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">Forensic Scan: {domain}</h2>
-        <p className="text-indigo-400 font-black text-xs uppercase tracking-[0.4em] mb-12">{statusMessage}</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-xl mx-auto">
-          {[
-            { label: "Tech Stack Escionage", status: "Active" },
-            { label: "SWOT Compilation", status: "Processing" },
-            { label: "Pricing Analysis", status: "Scanning" },
-            { label: "Sentiment Mapping", status: "Pending" }
-          ].map((item, i) => (
-            <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${item.status === 'Active' ? 'text-emerald-400' : 'text-slate-600'}`}>
-                {item.status}
-              </span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mono">Building Intelligence Report</span>
+          </div>
+          <div className="p-8 space-y-4 min-h-[400px] flex flex-col justify-end">
+            <div className="space-y-2 mono text-xs">
+              {logs.map((log, i) => (
+                <div key={i} className="flex space-x-4">
+                  <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString()}]</span>
+                  <span className={i === logs.length - 1 ? "text-white font-bold" : "text-slate-500"}>
+                    {i === logs.length - 1 && <span className="mr-2 text-emerald-500">➜</span>}
+                    {log}
+                  </span>
+                </div>
+              ))}
+              <div className="flex space-x-4 animate-pulse">
+                <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString()}]</span>
+                <span className="text-emerald-500 font-bold">
+                   <span className="mr-2">➜</span> Running forensic analysis...
+                   <span className="inline-block w-2 h-4 bg-emerald-500 ml-1"></span>
+                </span>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-xl mx-auto py-10">
-      <div className="glass rounded-[3rem] overflow-hidden border-white/10 shadow-2xl relative">
-        <div className="p-10 border-b border-white/5 bg-white/[0.02]">
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="h-1 w-6 bg-indigo-500 rounded-full"></div>
-            <span className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em]">Module 01. Probe</span>
-          </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">Initialize Audit</h2>
-          <p className="text-slate-500 mt-2 font-medium">Enter a target domain for full tactical analysis.</p>
+    <div className="max-w-xl mx-auto py-20">
+      <div className="bg-black border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+        <div className="p-8 border-b border-slate-800 bg-[#0a0a0a]">
+          <h2 className="text-2xl font-bold text-white tracking-tight">Create a New Audit</h2>
+          <p className="text-slate-500 text-sm mt-1 font-medium">Deploy a strategic intelligence probe to analyze a competitor's market position.</p>
         </div>
         
-        <div className="p-10">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-3">
-              <label htmlFor="domain" className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em]">
-                Target URL / Domain
+        <div className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="domain" className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Target Domain
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                  <i className="fa-solid fa-globe text-slate-600"></i>
-                </div>
-                <input
-                  type="text"
-                  id="domain"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  placeholder="e.g. stripe.com"
-                  className="block w-full pl-12 pr-6 py-5 bg-slate-900/50 border border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-white font-bold text-lg placeholder:text-slate-700"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                id="domain"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="e.g. apple.com"
+                className="block w-full px-4 py-3 bg-black border border-slate-800 rounded-md focus:border-slate-400 outline-none transition-all text-white font-medium text-sm placeholder:text-slate-700"
+                required
+              />
+              <p className="text-[10px] text-slate-600 italic">Enter the primary business domain for the most accurate results.</p>
             </div>
 
             {error && (
-              <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-5 rounded-2xl flex items-start space-x-4">
-                <i className="fa-solid fa-circle-exclamation mt-1"></i>
-                <p className="text-xs font-black leading-relaxed uppercase tracking-tight">{error}</p>
+              <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-md flex items-start space-x-3">
+                <i className="fa-solid fa-circle-exclamation mt-0.5 text-xs"></i>
+                <p className="text-[11px] font-bold leading-normal uppercase tracking-tight">{error}</p>
               </div>
             )}
 
-            <div className="flex items-center gap-6 pt-4">
+            <div className="flex items-center space-x-3 pt-4">
               <button
                 type="submit"
-                className="flex-1 bg-white text-slate-950 py-5 px-8 rounded-2xl font-black hover:bg-indigo-50 transition-all shadow-2xl active:scale-95 text-md uppercase tracking-widest"
+                className="flex-1 bg-white text-black py-2.5 px-4 rounded-md font-bold hover:bg-slate-200 transition-all active:scale-95 text-xs uppercase tracking-widest shadow-lg"
               >
-                Execute Probe
+                Deploy Probe
               </button>
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-8 py-5 border border-white/5 rounded-2xl font-black text-slate-500 hover:text-white transition-all text-xs uppercase tracking-widest"
+                className="px-4 py-2.5 border border-slate-800 rounded-md font-bold text-slate-500 hover:text-white transition-all text-xs uppercase tracking-widest"
               >
-                Abort
+                Cancel
               </button>
             </div>
           </form>
