@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SentimentAnalysis } from '../types';
 

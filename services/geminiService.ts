@@ -4,35 +4,48 @@ import { AuditResult } from "../types";
 
 const extractJson = (text: string): any => {
   try {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
+    // Attempt to find the JSON block if the model included conversational filler
+    const firstOpen = text.indexOf('{');
+    const lastClose = text.lastIndexOf('}');
+    if (firstOpen !== -1 && lastClose !== -1) {
+      const jsonStr = text.substring(firstOpen, lastClose + 1);
+      return JSON.parse(jsonStr);
+    }
     return JSON.parse(text);
   } catch (e) {
-    console.error("JSON Parse Error", e);
-    throw new Error("Data formatting error. Please try again.");
+    console.error("JSON Parse Error:", e, "Raw Text:", text);
+    throw new Error("Strategic intelligence extraction failed. Please re-run the probe.");
   }
 };
 
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
-  if (!process.env.API_KEY) throw new Error("API Key missing.");
-
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // Dense instructions to minimize input token cost
-  const systemInstruction = `Market Intel API. Return JSON for domain audit. 
-  Rules: Data-driven SWOT, detectable SaaS tech stack, aggressive "Why us" battlecards. 
-  Output MUST follow schema strictly.`;
+  // Using Gemini 3 Pro for world-class strategic reasoning
+  const modelName = 'gemini-3-pro-preview';
+
+  const systemInstruction = `You are a World-Class Strategic Market Auditor and Forensic Intelligence Specialist. 
+  Your mission is to perform a deep forensic audit and provide a high-fidelity report in JSON format.
+  
+  REPORT SECTIONS:
+  - SWOT: 4 bullet points for each quadrant.
+  - BATTLECARD: Generate high-impact 'Win Sequences', real customer objections, and discovery questions that expose technical debt.
+  - FEATURE GAP: Identify 5-8 specific product features. Statuses must be: 'available', 'limited', or 'missing'.
+  - SENTIMENT: Analyze Product, Support, and Pricing with 0-100 scores and specific user complaints.
+  - TECH STACK: Identify 10+ specific technologies used (CDNs, Frameworks, CRMs, etc.).
+  
+  BE SPECIFIC, AGGRESSIVE, AND ACTIONABLE. DO NOT PROVIDE GENERIC BULLSHIT.`;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Audit: ${domain}`,
+      model: modelName,
+      contents: `Perform an exhaustive forensic tactical audit for: ${domain}. Focus on SaaS infrastructure, feature gaps, and offensive sales win-strategies.`,
       config: {
         systemInstruction,
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
-        // Flash models are fastest with 0 thinking budget for structured tasks
-        thinkingConfig: { thinkingBudget: 0 },
+        // Higher thinking budget for deeper strategic synthesis of search results
+        thinkingConfig: { thinkingBudget: 8000 },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -67,7 +80,8 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
                   feature: { type: Type.STRING },
                   status: { type: Type.STRING },
                   description: { type: Type.STRING }
-                }
+                },
+                required: ['feature', 'status', 'description']
               }
             },
             sentiment: {
@@ -78,10 +92,12 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
                   category: { type: Type.STRING },
                   score: { type: Type.NUMBER },
                   gripes: { type: Type.ARRAY, items: { type: Type.STRING } }
-                }
+                },
+                required: ['category', 'score', 'gripes']
               }
             }
-          }
+          },
+          required: ['companyName', 'industry', 'summary', 'techStack', 'swot', 'battlecard', 'featureGap', 'sentiment']
         }
       }
     });
@@ -91,47 +107,33 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
       ?.map(chunk => chunk.web?.uri)
       .filter((uri): uri is string => !!uri) || [];
 
-    // Defensive merge to ensure no undefined property access crashes the UI
     return {
       id: Math.random().toString(36).substr(2, 9),
       domain,
       timestamp: new Date().toISOString(),
       sourceUrls,
-      companyName: parsedData.companyName || "Unknown Entity",
+      companyName: parsedData.companyName || domain,
       industry: parsedData.industry || "General Industry",
-      summary: parsedData.summary || "Summary data unavailable for this target.",
+      summary: parsedData.summary || "Intelligence summary complete.",
       techStack: Array.isArray(parsedData.techStack) ? parsedData.techStack : [],
-      swot: {
-        strengths: Array.isArray(parsedData.swot?.strengths) ? parsedData.swot.strengths : [],
-        weaknesses: Array.isArray(parsedData.swot?.weaknesses) ? parsedData.swot.weaknesses : [],
-        opportunities: Array.isArray(parsedData.swot?.opportunities) ? parsedData.swot.opportunities : [],
-        threats: Array.isArray(parsedData.swot?.threats) ? parsedData.swot.threats : [],
-      },
-      battlecard: {
-        howToWin: Array.isArray(parsedData.battlecard?.howToWin) ? parsedData.battlecard.howToWin : [],
-        commonObjections: Array.isArray(parsedData.battlecard?.commonObjections) ? parsedData.battlecard.commonObjections : [],
-        discoveryQuestions: Array.isArray(parsedData.battlecard?.discoveryQuestions) ? parsedData.battlecard.discoveryQuestions : [],
-      },
+      swot: parsedData.swot || { strengths: [], weaknesses: [], opportunities: [], threats: [] },
+      battlecard: parsedData.battlecard || { howToWin: [], commonObjections: [], discoveryQuestions: [] },
       featureGap: Array.isArray(parsedData.featureGap) ? parsedData.featureGap : [],
       sentiment: Array.isArray(parsedData.sentiment) ? parsedData.sentiment : []
     };
   } catch (error: any) {
-    if (error.message?.includes('429')) {
-      throw new Error("Efficiency limit reached. Wait 60s.");
-    }
-    throw error;
+    console.error("Forensic Audit Error:", error);
+    throw new Error(`Strategic probe failed: ${error.message}`);
   }
 };
 
 export const generateCompetitorImage = async (prompt: string): Promise<string> => {
-    if (!process.env.API_KEY) return "";
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: {
-                parts: [{ text: `Minimal Daytona dark tech banner for ${prompt}. Indigo neon, deep slate, 16:9.` }]
+                parts: [{ text: `High-end strategic market visual: ${prompt}. Abstract data flows, minimalist dark mode UI aesthetic, indigo and violet highlights, 16:9 cinematic.` }]
             },
             config: {
                 imageConfig: { aspectRatio: "16:9" }
@@ -139,10 +141,10 @@ export const generateCompetitorImage = async (prompt: string): Promise<string> =
         });
 
         for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
+          if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
         }
     } catch (e) {
-        console.error("Image generation skipped for cost efficiency.");
+        console.warn("Visual generation skipped.");
     }
-    return "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200";
+    return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200";
 };

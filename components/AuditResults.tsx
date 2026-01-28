@@ -21,7 +21,8 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
 
   useEffect(() => {
     const fetchImage = async () => {
-        const img = await generateCompetitorImage(`${audit.companyName} market intelligence visualization`);
+        // Generating a high-end corporate strategic visual
+        const img = await generateCompetitorImage(`Premium corporate strategy visualization for ${audit.companyName} market intelligence, abstract 3D data flows, indigo and slate palette`);
         setHeaderImage(img);
     };
     fetchImage();
@@ -83,7 +84,7 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
         </div>
       </div>
 
-      {/* Navigation Tabs - Desktop (Daytona Glass Style) */}
+      {/* Navigation Tabs */}
       {!hideTabs && (
         <div className="hidden lg:flex space-x-2 p-2 bg-white/5 rounded-[1.5rem] border border-white/10 shadow-2xl sticky top-24 z-40 backdrop-blur-xl no-print">
           {tabs.map((tab) => (
@@ -132,6 +133,7 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
             </div>
             <div className="space-y-10">
               <TechStack stack={audit.techStack} />
+              
               <div className="bg-gradient-to-br from-indigo-600 to-purple-800 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group glow-indigo border border-white/10">
                 <div className="absolute top-0 right-0 p-6 opacity-10">
                    <i className="fa-solid fa-bolt-lightning text-8xl rotate-12 group-hover:rotate-0 transition-transform duration-700"></i>

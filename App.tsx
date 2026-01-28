@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppView, AuditResult } from './types';
 import Navbar from './components/Navbar';
@@ -15,6 +14,36 @@ const App: React.FC = () => {
   const [activeAuditTab, setActiveAuditTab] = useState('overview');
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
   const [printContext, setPrintContext] = useState<'single' | 'all'>('single');
+  const [hasCheckedKey, setHasCheckedKey] = useState(false);
+  const [isKeyRequired, setIsKeyRequired] = useState(false);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      // Priority 1: Check for standard environment variable
+      if (process.env.API_KEY && process.env.API_KEY.length > 5) {
+        setHasCheckedKey(true);
+        setIsKeyRequired(false);
+        return;
+      }
+      
+      // Priority 2: Check for AI Studio session
+      if (window.aistudio?.hasSelectedApiKey) {
+        try {
+          const selected = await window.aistudio.hasSelectedApiKey();
+          if (!selected) {
+            setIsKeyRequired(true);
+          }
+        } catch (e) {
+          setIsKeyRequired(true);
+        }
+      } else {
+        // Fallback for non-studio contexts without ENV
+        setIsKeyRequired(true);
+      }
+      setHasCheckedKey(true);
+    };
+    checkKey();
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('competeai_audits');
@@ -22,7 +51,7 @@ const App: React.FC = () => {
       try {
         setAudits(JSON.parse(saved));
       } catch (e) {
-        console.error("Failed to load audits", e);
+        console.error("Failed to load historical audits", e);
       }
     }
   }, []);
@@ -30,6 +59,47 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('competeai_audits', JSON.stringify(audits));
   }, [audits]);
+
+  const handleSelectKey = async () => {
+    if (window.aistudio?.openSelectKey) {
+      await window.aistudio.openSelectKey();
+      // Assume success and proceed per safety guidelines
+      setIsKeyRequired(false);
+    }
+  };
+
+  if (!hasCheckedKey) return null;
+
+  if (isKeyRequired) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center bg-grid">
+        <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/20">
+          <i className="fa-solid fa-key text-white text-3xl"></i>
+        </div>
+        <h1 className="text-4xl font-black text-white mb-4 tracking-tighter">Strategic Access Required</h1>
+        <p className="text-slate-400 max-w-md mb-10 leading-relaxed font-medium">
+          CompeteAI requires a valid Gemini API key to perform forensic market analysis. 
+          Please connect a key from a paid GCP project.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={handleSelectKey}
+            className="bg-white text-slate-950 px-10 py-4 rounded-2xl font-black hover:bg-indigo-50 transition-all flex items-center justify-center shadow-2xl active:scale-95 text-sm uppercase tracking-widest"
+          >
+            Connect API Key
+          </button>
+          <a 
+            href="https://ai.google.dev/gemini-api/docs/billing" 
+            target="_blank" 
+            rel="noreferrer"
+            className="px-10 py-4 rounded-2xl border border-white/10 text-slate-500 font-black hover:text-white transition-all text-[10px] uppercase tracking-[0.2em] flex items-center justify-center"
+          >
+            Billing Documentation
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const handleAuditComplete = (result: AuditResult) => {
     setAudits(prev => [result, ...prev]);
@@ -80,12 +150,6 @@ const App: React.FC = () => {
                 onTabChange={() => {}} 
                 hideTabs
             />
-            {printContext === 'all' && (
-               <div className="mt-20">
-                  <h2 className="text-2xl font-black mb-8">Supplementary Sales Battlecard: {audit.companyName}</h2>
-                  <AuditResults audit={audit} activeTab="battlecard" onTabChange={() => {}} hideTabs />
-               </div>
-            )}
           </div>
         ))}
       </div>
@@ -94,7 +158,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950">
-      {/* Sidebar - Desktop */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar 
           currentView={currentView} 
@@ -108,26 +171,10 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       {isMenuOpen && (
-        <div 
-          className="fixed inset-0 z-50 lg:hidden"
-          onClick={() => setIsMenuOpen(false)}
-        >
+        <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setIsMenuOpen(false)}>
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"></div>
-          <div 
-            className="relative flex flex-col w-full max-w-xs h-full bg-slate-900 border-r border-slate-800 animate-in slide-in-from-left duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-               <span className="text-white font-black flex items-center tracking-tight">
-                 <i className="fa-solid fa-bolt text-indigo-400 mr-2"></i>
-                 CompeteAI
-               </span>
-               <button onClick={() => setIsMenuOpen(false)} className="text-slate-400 p-2 hover:text-white transition-colors">
-                 <i className="fa-solid fa-xmark text-xl"></i>
-               </button>
-            </div>
+          <div className="relative flex flex-col w-full max-w-xs h-full bg-slate-950 border-r border-white/5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <Sidebar 
               currentView={currentView} 
               setView={(view) => { setCurrentView(view); setIsMenuOpen(false); }} 
@@ -142,7 +189,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content Area */}
       <div className="flex flex-col flex-1 w-0 overflow-hidden relative z-10 bg-grid">
         <Navbar 
           onNewAudit={() => { setCurrentView(AppView.NEW_AUDIT); setIsMenuOpen(false); }} 
@@ -150,7 +196,7 @@ const App: React.FC = () => {
           toggleMenu={() => setIsMenuOpen(!isMenuOpen)}
         />
         
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none p-4 md:p-10">
+        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none px-4 py-8 md:px-10">
           <div className="max-w-7xl mx-auto">
             {currentView === AppView.DASHBOARD && (
               <Dashboard 
@@ -172,18 +218,6 @@ const App: React.FC = () => {
                 onTabChange={setActiveAuditTab} 
                 onPrint={() => triggerPrint('single')}
               />
-            )}
-            
-            {currentView === AppView.AUDIT_DETAIL && !selectedAudit && (
-              <div className="text-center py-20">
-                <p className="text-slate-500">No audit selected</p>
-                <button 
-                  onClick={() => setCurrentView(AppView.DASHBOARD)}
-                  className="mt-4 text-indigo-400 hover:text-indigo-300 hover:underline"
-                >
-                  Go back to Dashboard
-                </button>
-              </div>
             )}
           </div>
         </main>

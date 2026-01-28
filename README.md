@@ -1,20 +1,24 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# CompeteAI - Deployment Instructions
 
-This contains everything you need to run your app locally.
+Follow these steps to get your app live on Vercel:
 
-View your app in AI Studio: https://ai.studio/apps/drive/1GrOjSIuCkJw61xvsgZVTGCpZpzGmAeHv
+## 1. Commit and Push to GitHub
+Make sure you are on your `atwork` branch and push the latest changes:
+```bash
+git add .
+git commit -m "Optimize for Vercel deployment"
+git push origin atwork
+```
 
-## Run Locally
+## 2. Connect to Vercel
+1. Go to [Vercel](https://vercel.com) and log in.
+2. Click **Add New** > **Project**.
+3. Import your GitHub repository.
+4. **Environment Variables (CRITICAL)**:
+   - In the "Environment Variables" section, add a new key named `API_KEY`.
+   - Set the value to your Gemini API Key.
+5. Click **Deploy**.
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 3. Verify
+Once deployed, Vercel will provide a `.vercel.app` URL. Your forensic audit system is now live!
