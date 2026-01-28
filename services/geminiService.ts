@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -17,6 +16,28 @@ const extractJson = (text: string): any => {
   }
 };
 
+export const generateCompetitorImage = async (apiKey: string, domain: string, industry: string): Promise<string> => {
+    const ai = new GoogleGenAI({ apiKey });
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+                parts: [{ text: `High-end cinematic strategic market visual for ${domain} in the ${industry} sector. Abstract architectural data flows, minimalist dark mode tech aesthetic, deep charcoal and electric indigo highlights, professional commercial photography style, ultra-detailed.` }]
+            },
+            config: {
+                imageConfig: { aspectRatio: "16:9" }
+            }
+        });
+
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
+        }
+    } catch (e) {
+        console.warn("Visual generation skipped:", e);
+    }
+    return `https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200&domain=${domain}`;
+};
+
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
   const apiKey = process.env.API_KEY;
   
@@ -30,19 +51,12 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
   const systemInstruction = `You are a World-Class Strategic Market Auditor and Forensic Intelligence Specialist. 
   Your mission is to perform a deep forensic audit and provide a high-fidelity report in JSON format.
   
-  REPORT SECTIONS:
-  - SWOT: 4 bullet points for each quadrant.
-  - BATTLECARD: Generate high-impact 'Win Sequences', real customer objections, and discovery questions that expose technical debt.
-  - FEATURE GAP: Identify 5-8 specific product features. Statuses must be: 'available', 'limited', or 'missing'.
-  - SENTIMENT: Analyze Product, Support, and Pricing with 0-100 scores and specific user complaints.
-  - TECH STACK: Identify 10+ specific technologies used (CDNs, Frameworks, CRMs, etc.).
-  
-  BE SPECIFIC, AGGRESSIVE, AND ACTIONABLE. DO NOT PROVIDE GENERIC BULLSHIT.`;
+  BE SPECIFIC, AGGRESSIVE, AND ACTIONABLE.`;
 
   try {
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: `Perform an exhaustive forensic tactical audit for: ${domain}. Focus on SaaS infrastructure, feature gaps, and offensive sales win-strategies.`,
+      contents: `Perform an exhaustive forensic tactical audit for: ${domain}.`,
       config: {
         systemInstruction,
         tools: [{ googleSearch: {} }],
@@ -105,15 +119,14 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     });
 
     const parsedData = extractJson(response.text || "{}");
-    const sourceUrls = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-      ?.map(chunk => chunk.web?.uri)
-      .filter((uri): uri is string => !!uri) || [];
+    
+    // Trigger visual generation in parallel
+    const visualUrl = await generateCompetitorImage(apiKey, domain, parsedData.industry || "Technology");
 
     return {
       id: Math.random().toString(36).substr(2, 9),
       domain,
       timestamp: new Date().toISOString(),
-      sourceUrls,
       companyName: parsedData.companyName || domain,
       industry: parsedData.industry || "General Industry",
       summary: parsedData.summary || "Intelligence summary complete.",
@@ -121,35 +134,11 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
       swot: parsedData.swot || { strengths: [], weaknesses: [], opportunities: [], threats: [] },
       battlecard: parsedData.battlecard || { howToWin: [], commonObjections: [], discoveryQuestions: [] },
       featureGap: Array.isArray(parsedData.featureGap) ? parsedData.featureGap : [],
-      sentiment: Array.isArray(parsedData.sentiment) ? parsedData.sentiment : []
+      sentiment: Array.isArray(parsedData.sentiment) ? parsedData.sentiment : [],
+      visualUrl
     };
   } catch (error: any) {
     console.error("Forensic Audit Error:", error);
     throw new Error(error.message.includes("API_KEY") ? error.message : `Strategic probe failed: ${error.message}`);
   }
-};
-
-export const generateCompetitorImage = async (prompt: string): Promise<string> => {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200";
-    
-    const ai = new GoogleGenAI({ apiKey });
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: {
-                parts: [{ text: `High-end strategic market visual: ${prompt}. Abstract data flows, minimalist dark mode UI aesthetic, indigo and violet highlights, 16:9 cinematic.` }]
-            },
-            config: {
-                imageConfig: { aspectRatio: "16:9" }
-            }
-        });
-
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
-        }
-    } catch (e) {
-        console.warn("Visual generation skipped.");
-    }
-    return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200";
 };
