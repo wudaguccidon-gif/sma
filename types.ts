@@ -23,6 +23,11 @@ export interface SentimentAnalysis {
   gripes: string[];
 }
 
+export interface MapLocation {
+  title: string;
+  uri: string;
+}
+
 export interface AuditResult {
   id: string;
   domain: string;
@@ -37,7 +42,9 @@ export interface AuditResult {
   timestamp: string;
   sourceUrls?: string[];
   visualUrl?: string; 
-  videoUrl?: string; // New: Cinematic briefing video
+  videoUrl?: string;
+  audioUrl?: string; // New: TTS narrated briefing
+  marketPresence?: MapLocation[]; // New: Google Maps grounding data
 }
 
 export enum AppView {

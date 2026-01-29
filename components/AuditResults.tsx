@@ -6,6 +6,7 @@ import FeatureMatrix from './FeatureMatrix';
 import ReviewAnalysis from './ReviewAnalysis';
 import TechStack from './TechStack';
 import VideoBriefing from './VideoBriefing';
+import { generateBriefingAudio } from '../services/geminiService';
 
 interface AuditResultsProps {
   audit: AuditResult;
@@ -17,20 +18,33 @@ interface AuditResultsProps {
 
 const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChange, onPrint, hideTabs = false }) => {
   const [currentAudit, setCurrentAudit] = useState(audit);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
 
   const tabs = [
     { id: 'overview', label: 'Summary' },
-    { id: 'vision', label: 'Tactical Visual' },
+    { id: 'media', label: 'Media Intelligence' },
     { id: 'battlecard', label: 'Battlecard' },
     { id: 'features', label: 'Features' },
     { id: 'sentiment', label: 'Sentiment' },
     { id: 'tech', label: 'Tech Stack' },
   ];
 
+  const handleAudioBriefing = async () => {
+    if (currentAudit.audioUrl) return;
+    setIsAudioLoading(true);
+    try {
+        const url = await generateBriefingAudio(currentAudit.summary);
+        setCurrentAudit(prev => ({ ...prev, audioUrl: url }));
+    } catch (e) {
+        console.error("Audio generation failed", e);
+    } finally {
+        setIsAudioLoading(false);
+    }
+  };
+
   const handleVideoGenerated = (url: string) => {
       const updatedAudit = { ...currentAudit, videoUrl: url };
       setCurrentAudit(updatedAudit);
-      // Update parent or local storage if needed
       const saved = localStorage.getItem('competeai_audits');
       if (saved) {
           const audits = JSON.parse(saved);
@@ -50,12 +64,8 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
           <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100" alt="Strategic Visual" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
           <div className="absolute bottom-10 left-10">
-            <div className="flex items-center space-x-3 mb-2">
-                <div className="h-1 w-8 bg-indigo-500 rounded-full"></div>
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Strategic Vector 01</span>
-            </div>
             <h1 className="text-4xl font-black text-white tracking-tighter uppercase">{currentAudit.companyName}</h1>
-            <p className="text-slate-400 font-bold text-sm tracking-widest uppercase mt-1 opacity-70">{currentAudit.industry} Intelligence Report</p>
+            <p className="text-slate-400 font-bold text-sm tracking-widest uppercase mt-1 opacity-70">Forensic Briefing v1.0</p>
           </div>
         </div>
       )}
@@ -72,28 +82,42 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
             />
           </div>
           <div>
-            <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{currentAudit.companyName}</h2>
-              <span className="px-2 py-0.5 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {currentAudit.industry}
-              </span>
-            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">{currentAudit.companyName}</h2>
             <p className="text-slate-500 text-sm font-medium mono mt-1">{currentAudit.domain}</p>
           </div>
         </div>
 
         <div className="flex space-x-3">
+          <button 
+            onClick={handleAudioBriefing}
+            disabled={isAudioLoading}
+            className="px-4 py-2 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 rounded-md text-xs font-semibold hover:bg-indigo-600/20 transition-all flex items-center"
+          >
+            {isAudioLoading ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-headset mr-2"></i>}
+            {currentAudit.audioUrl ? 'Narrator Active' : 'Start Audio Briefing'}
+          </button>
           {!hideTabs && onPrint && (
              <button 
                onClick={onPrint}
-               className="px-4 py-2 bg-black border border-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-900 transition-all flex items-center no-print"
+               className="px-4 py-2 bg-black border border-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-900 transition-all"
              >
-               <i className="fa-solid fa-download mr-2 text-slate-500"></i>
                Export Report
              </button>
           )}
         </div>
       </div>
+
+      {currentAudit.audioUrl && (
+          <div className="bg-indigo-600/5 border border-indigo-500/20 rounded-2xl p-4 flex items-center space-x-6 animate-in slide-in-from-top-4">
+             <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white">
+                <i className="fa-solid fa-waveform"></i>
+             </div>
+             <div className="flex-1">
+                <audio src={currentAudit.audioUrl} controls className="w-full h-8" />
+             </div>
+             <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest px-4">Audio Briefing System Online</span>
+          </div>
+      )}
 
       {/* Tabs */}
       {!hideTabs && (
@@ -103,15 +127,11 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`py-3 text-sm font-medium transition-all relative ${
-                activeTab === tab.id 
-                ? 'text-white' 
-                : 'text-slate-500 hover:text-slate-300'
+                activeTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab.label}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"></div>
-              )}
+              {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"></div>}
             </button>
           ))}
         </div>
@@ -121,33 +141,33 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
       <div className="mt-8">
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in duration-300">
-            <div className="bg-black border border-slate-800 rounded-xl overflow-hidden">
-               <div className="bg-[#0a0a0a] px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Strategic Briefing</h3>
-               </div>
-               <div className="p-8">
-                  <p className="text-slate-300 text-lg leading-relaxed font-medium tracking-tight">
-                    {currentAudit.summary}
-                  </p>
-               </div>
+            <div className="bg-black border border-slate-800 rounded-xl overflow-hidden p-8">
+                <p className="text-slate-300 text-lg leading-relaxed font-medium">{currentAudit.summary}</p>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <SWOTCard swot={currentAudit.swot} />
               <div className="space-y-8">
                 <TechStack stack={currentAudit.techStack} />
-                <div className="bg-white text-black p-8 rounded-xl">
-                   <p className="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-50">High-Impact Recommendation</p>
-                   <p className="text-lg font-bold italic leading-snug">
-                     "{currentAudit.battlecard.howToWin[0]}"
-                   </p>
-                </div>
+                {currentAudit.marketPresence && currentAudit.marketPresence.length > 0 && (
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl">
+                        <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Strategic Footprint</h4>
+                        <div className="space-y-3">
+                            {currentAudit.marketPresence.map((loc, i) => (
+                                <a key={i} href={loc.uri} target="_blank" className="flex items-center space-x-3 text-sm text-indigo-400 hover:underline">
+                                    <i className="fa-solid fa-location-dot"></i>
+                                    <span>{loc.title}</span>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === 'vision' && (
+        {activeTab === 'media' && (
            <VideoBriefing audit={currentAudit} onVideoGenerated={handleVideoGenerated} />
         )}
 
