@@ -15,13 +15,12 @@ const SWOTCard: React.FC<SWOTCardProps> = ({ swot }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
       {sections.map((section) => (
         <div 
           key={section.title} 
           className="bg-black border border-slate-800 rounded-3xl p-6 group hover:border-slate-700 transition-all relative overflow-hidden h-full flex flex-col"
         >
-          {/* Subtle background icon */}
           <div className="absolute -bottom-4 -right-4 text-slate-900 opacity-20 transform -rotate-12 transition-transform group-hover:rotate-0">
              <i className={`fa-solid ${section.icon} text-6xl`}></i>
           </div>

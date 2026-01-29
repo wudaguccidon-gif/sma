@@ -59,13 +59,13 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
 
   return (
     <div className="w-full space-y-6 py-4">
-      {/* Expanded Hero Section */}
+      {/* Expanded Hero Section - Full Bleed Potential */}
       {currentAudit.visualUrl && (
-        <div className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl mb-6 group">
-          <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105" alt="Strategic Visual" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        <div className="relative w-full h-48 md:h-80 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl mb-6 group">
+          <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105" alt="Strategic Visual" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
           <div className="absolute bottom-6 left-8 flex items-end space-x-6">
-            <div className="w-20 h-20 bg-black/80 backdrop-blur-md border border-slate-700 p-2 rounded-2xl shadow-2xl">
+            <div className="w-20 h-20 md:w-28 md:h-28 bg-black/80 backdrop-blur-md border border-slate-700 p-2 rounded-2xl shadow-2xl">
                 <img 
                   src={`https://logo.clearbit.com/${currentAudit.domain}`} 
                   className="w-full h-full object-contain rounded-lg"
@@ -73,9 +73,9 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
                   alt={currentAudit.companyName}
                 />
             </div>
-            <div className="pb-1">
-                <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">{currentAudit.companyName}</h1>
-                <p className="text-indigo-400 font-black text-[10px] tracking-[0.4em] uppercase mt-2">Strategic Command: Sector ${currentAudit.industry}</p>
+            <div className="pb-2">
+                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">{currentAudit.companyName}</h1>
+                <p className="text-indigo-400 font-black text-[10px] md:text-xs tracking-[0.4em] uppercase mt-3">Sector Analysis: {currentAudit.industry}</p>
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-800 pb-6">
         <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">Target: {currentAudit.domain}</span>
-            <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[9px] font-black text-indigo-400 uppercase tracking-widest">Signal Strength: Optimal</span>
+            <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[9px] font-black text-indigo-400 uppercase tracking-widest">Signal: Optimal</span>
             <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">Status: Classified</span>
         </div>
 
@@ -117,11 +117,10 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
              <div className="flex-1">
                 <audio src={currentAudit.audioUrl} controls className="w-full h-8 custom-audio" />
              </div>
-             <span className="hidden md:block text-[9px] font-black text-indigo-400 uppercase tracking-widest px-4 border-l border-indigo-500/20">Voice Synth Engine: Kore</span>
           </div>
       )}
 
-      {/* Full-Width Navigation */}
+      {/* Navigation */}
       {!hideTabs && (
         <div className="flex space-x-8 border-b border-slate-800 sticky top-14 bg-black z-30 w-full overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
@@ -140,63 +139,36 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
       )}
 
       {/* Expanded Content Area */}
-      <div className="mt-8 pb-20">
+      <div className="mt-8 pb-20 w-full">
         {activeTab === 'overview' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="bg-slate-950/50 border border-slate-800 rounded-3xl p-10 relative overflow-hidden group">
+          <div className="space-y-8 animate-in fade-in duration-500 w-full">
+            <div className="bg-slate-950/50 border border-slate-800 rounded-3xl p-10 relative overflow-hidden group w-full">
                 <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/50 group-hover:w-full group-hover:opacity-5 transition-all duration-700"></div>
                 <div className="flex items-center space-x-3 mb-6">
                     <div className="h-1 w-6 bg-indigo-500 rounded-full"></div>
-                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Forensic Briefing</span>
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Forensic Summary</span>
                 </div>
-                <p className="text-slate-200 text-xl leading-relaxed font-bold tracking-tight italic">
+                <p className="text-slate-200 text-xl md:text-2xl leading-relaxed font-bold tracking-tight italic">
                     "{currentAudit.summary}"
                 </p>
             </div>
             
-            <div className="grid grid-cols-1 2xl:grid-cols-3 gap-8 items-start">
-              <div className="2xl:col-span-2">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start w-full">
+              <div className="xl:col-span-2 w-full">
                 <SWOTCard swot={currentAudit.swot} />
               </div>
-              <div className="space-y-8">
+              <div className="space-y-8 w-full">
                 <TechStack stack={currentAudit.techStack} />
-                {currentAudit.marketPresence && currentAudit.marketPresence.length > 0 && (
-                    <div className="bg-black border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <i className="fa-solid fa-map-location-dot text-4xl"></i>
-                        </div>
-                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-800 pb-4">Strategic Footprint</h4>
-                        <div className="space-y-4">
-                            {currentAudit.marketPresence.map((loc, i) => (
-                                <a key={i} href={loc.uri} target="_blank" className="flex items-center group space-x-4 p-3 rounded-xl hover:bg-indigo-500/5 transition-all">
-                                    <div className="w-8 h-8 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                                        <i className="fa-solid fa-location-arrow text-xs"></i>
-                                    </div>
-                                    <span className="text-sm font-bold text-slate-300 group-hover:text-indigo-400 transition-colors">{loc.title}</span>
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )}
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === 'media' && (
-           <div className="animate-in fade-in duration-500">
-             <VideoBriefing audit={currentAudit} onVideoGenerated={handleVideoGenerated} />
-           </div>
-        )}
-
-        {activeTab === 'battlecard' && (
-            <div className="animate-in slide-in-from-bottom-4 duration-500">
-                <Battlecard data={currentAudit.battlecard} companyName={currentAudit.companyName} />
-            </div>
-        )}
-        {activeTab === 'features' && <div className="animate-in fade-in duration-500"><FeatureMatrix features={currentAudit.featureGap} /></div>}
-        {activeTab === 'sentiment' && <div className="animate-in fade-in duration-500"><ReviewAnalysis sentiment={currentAudit.sentiment} /></div>}
-        {activeTab === 'tech' && <div className="animate-in fade-in duration-500"><TechStack stack={currentAudit.techStack} isLarge /></div>}
+        {activeTab === 'media' && <div className="animate-in fade-in duration-500 w-full"><VideoBriefing audit={currentAudit} onVideoGenerated={handleVideoGenerated} /></div>}
+        {activeTab === 'battlecard' && <div className="animate-in slide-in-from-bottom-4 duration-500 w-full"><Battlecard data={currentAudit.battlecard} companyName={currentAudit.companyName} /></div>}
+        {activeTab === 'features' && <div className="animate-in fade-in duration-500 w-full"><FeatureMatrix features={currentAudit.featureGap} /></div>}
+        {activeTab === 'sentiment' && <div className="animate-in fade-in duration-500 w-full"><ReviewAnalysis sentiment={currentAudit.sentiment} /></div>}
+        {activeTab === 'tech' && <div className="animate-in fade-in duration-500 w-full"><TechStack stack={currentAudit.techStack} isLarge /></div>}
       </div>
     </div>
   );

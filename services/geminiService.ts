@@ -19,18 +19,20 @@ const extractJson = (text: string): any => {
 
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey === "undefined") {
-    throw new Error("API_KEY_MISSING");
+  
+  // Robust check for Vercel environment variables
+  if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
+    throw new Error("CRITICAL: API_KEY is missing or invalid. If you just added it to Vercel, you MUST 'Redeploy' the project for changes to take effect.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Tactical forensic audit for domain: ${domain}. Analyze market positioning, technology profile, and SWOT.`,
+      model: 'gemini-3-pro-preview', // Upgraded for complex strategic reasoning
+      contents: `Perform a deep forensic tactical audit for domain: ${domain}. Analyze market positioning, technology profile, and perform a detailed SWOT analysis.`,
       config: {
-        systemInstruction: "Senior Market Intelligence Analyst. Return ONLY JSON. Be concise, aggressive, and insightful.",
+        systemInstruction: "You are a world-class Senior Market Intelligence Analyst. Return ONLY valid JSON. Be forensic, aggressive, and provide highly specific technical and strategic insights. Use tools to find real-time data.",
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: {
@@ -96,7 +98,7 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     try {
       const visualRes = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
-        contents: { parts: [{ text: `High-tech cinematic office building for ${parsedData.companyName || domain}. Rain, neon blue lights, ultra-modern, 4k.` }] }
+        contents: { parts: [{ text: `Cinematic high-tech futuristic headquarters for ${parsedData.companyName || domain}. Neon accents, hyper-modern, rainy night, 4k, architectural photography.` }] }
       });
       for (const part of visualRes.candidates[0].content.parts) {
         if (part.inlineData) visualUrl = `data:image/png;base64,${part.inlineData.data}`;
@@ -143,7 +145,7 @@ export const generateBriefingVideo = async (prompt: string): Promise<string> => 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
-    prompt: `Strategic intelligence summary for ${prompt}`,
+    prompt: `Cinematic strategic intelligence summary visualization for ${prompt}`,
     config: { numberOfVideos: 1, resolution: '720p', aspectRatio: '16:9' }
   });
   while (!operation.done) {

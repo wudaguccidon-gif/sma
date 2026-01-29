@@ -36,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ audits, onSelectAudit, onNew, onD
       </div>
 
       {audits.length === 0 ? (
-        <div className="border border-slate-800 rounded-xl p-20 flex flex-col items-center justify-center text-center bg-[#050505] min-h-[50vh]">
+        <div className="border border-slate-800 rounded-xl p-20 flex flex-col items-center justify-center text-center bg-[#050505] min-h-[50vh] w-full">
           <div className="w-16 h-16 rounded-2xl border border-slate-800 flex items-center justify-center mb-6 bg-black">
             <i className="fa-solid fa-radar text-slate-700 text-2xl animate-pulse"></i>
           </div>
@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ audits, onSelectAudit, onNew, onD
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6 w-full">
           {audits.map((audit) => (
             <div 
               key={audit.id}
