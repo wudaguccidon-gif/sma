@@ -55,7 +55,7 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto py-20 px-4">
+      <div className="w-full max-w-5xl mx-auto py-20 px-4">
         <div className="border border-slate-800 rounded-[2rem] overflow-hidden bg-black shadow-2xl relative">
           <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-pulse"></div>
           <div className="p-10 space-y-6 min-h-[400px] flex flex-col justify-end">
@@ -83,7 +83,7 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-20">
+    <div className="w-full max-w-3xl mx-auto py-10 md:py-20 px-4">
       <div className="bg-black border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
         <div className="p-10 border-b border-slate-800 bg-gradient-to-b from-slate-900/50 to-transparent">
           <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Initiate Audit</h2>

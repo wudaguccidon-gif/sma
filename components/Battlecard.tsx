@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BattlecardData } from '../types';
 
@@ -10,7 +11,7 @@ const Battlecard: React.FC<BattlecardProps> = ({ data, companyName }) => {
   if (!data) return <div className="p-10 text-center text-slate-500">Battlecard data currently unavailable.</div>;
 
   return (
-    <div className="space-y-10 max-w-6xl mx-auto">
+    <div className="space-y-10 w-full">
       <div className="glass rounded-[3rem] p-10 md:p-16 border-white/5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] -mr-64 -mt-64"></div>
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-purple-600/10 blur-[120px] -ml-32 -mb-32"></div>
@@ -93,7 +94,7 @@ const Battlecard: React.FC<BattlecardProps> = ({ data, companyName }) => {
       <div className="glass p-12 rounded-[2.5rem] border-white/5 text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6">Strategic Forensic Analysis</h4>
-        <p className="text-slate-300 max-w-3xl mx-auto italic text-xl font-medium leading-relaxed tracking-tight">
+        <p className="text-slate-300 w-full max-w-5xl mx-auto italic text-xl font-medium leading-relaxed tracking-tight">
           "{companyName} typically anchors on legacy reliability. Disrupt this by emphasizing your <span className="text-indigo-400 font-black">Velocity of Innovation</span>. Pivot the prospect toward the technical debt hidden within legacy platforms."
         </p>
       </div>
