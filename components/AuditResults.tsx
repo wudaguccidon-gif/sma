@@ -43,7 +43,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
 
   return (
     <div className="w-full space-y-6 py-4">
-      {/* Expanded Hero Section - Full Bleed Potential */}
       {currentAudit.visualUrl && (
         <div className="relative w-full h-48 md:h-80 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl mb-6 group">
           <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105" alt="Strategic Visual" />
@@ -65,7 +64,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
         </div>
       )}
 
-      {/* Action Bar */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-800 pb-6">
         <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">Target: {currentAudit.domain}</span>
@@ -104,7 +102,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
           </div>
       )}
 
-      {/* Navigation */}
       {!hideTabs && (
         <div className="flex space-x-8 border-b border-slate-800 sticky top-14 bg-black z-30 w-full overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
@@ -122,7 +119,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
         </div>
       )}
 
-      {/* Expanded Content Area */}
       <div className="mt-8 pb-20 w-full">
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in duration-500 w-full">

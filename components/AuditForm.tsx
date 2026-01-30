@@ -21,7 +21,7 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
     "Querying global sentiment indexes...",
     "Analyzing SWOT vectors...",
     "Building tactical battlecard...",
-    "Generating visual briefing..."
+    "Synthesizing high-fidelity visuals..."
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,7 +71,7 @@ const AuditForm: React.FC<AuditFormProps> = ({ onComplete, onCancel }) => {
               <div className="flex space-x-6">
                 <span className="text-slate-700 shrink-0">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
                 <span className="text-emerald-500 font-bold animate-pulse">
-                   <span className="mr-2">➜</span> Synthesizing strategic matrix...
+                   <span className="mr-2">➜</span> Finalizing strategic report...
                 </span>
               </div>
             </div>

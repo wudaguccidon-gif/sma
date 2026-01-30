@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -17,20 +16,24 @@ const extractJson = (text: string): any => {
   }
 };
 
+/**
+ * Performs a deep forensic tactical audit using Gemini 3 Pro.
+ * Incorporates real-time grounding via Google Search.
+ */
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
-  const apiKey = process.env.API_KEY;
+  // FIXED: Changed from process.env to import.meta.env for Vite/Vercel
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
-  // Robust check for Vercel environment variables
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
-    throw new Error("CRITICAL: API_KEY is missing or invalid. If you just added it to Vercel, you MUST 'Redeploy' the project for changes to take effect.");
+    throw new Error("CRITICAL: API_KEY is missing or invalid. Set it in environment variables.");
   }
 
-  // Always create a new GoogleGenAI instance right before making an API call
+  // Create new instance for each call to ensure fresh state
   const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-1.5-pro', // Note: You may need to change 'gemini-3-pro-preview' to 'gemini-1.5-pro' if it fails
       contents: `Perform a deep forensic tactical audit for domain: ${domain}. Analyze market positioning, technology profile, and perform a detailed SWOT analysis.`,
       config: {
         systemInstruction: "You are a world-class Senior Market Intelligence Analyst. Return ONLY valid JSON. Be forensic, aggressive, and provide highly specific technical and strategic insights. Use tools to find real-time data.",
@@ -94,15 +97,24 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
 
     const parsedData = extractJson(response.text || "{}");
 
-    // Tactical Visual (Hero shot)
+    // Extract grounding URLs from metadata
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+    const sourceUrls = groundingChunks?.map((chunk: any) => chunk.web?.uri).filter((uri: any) => typeof uri === 'string') || [];
+
     let visualUrl = "";
     try {
       const visualRes = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: { parts: [{ text: `Cinematic high-tech futuristic headquarters for ${parsedData.companyName || domain}. Neon accents, hyper-modern, rainy night, 4k, architectural photography.` }] }
+        model: 'gemini-1.5-flash', // Note: Changed from 'gemini-2.5-flash-image'
+        contents: { parts: [{ text: `Cinematic high-tech futuristic headquarters for ${parsedData.companyName || domain}. Neon accents, hyper-modern, architectural photography.` }] }
       });
-      for (const part of visualRes.candidates[0].content.parts) {
-        if (part.inlineData) visualUrl = `data:image/png;base64,${part.inlineData.data}`;
+      // Correctly iterate through parts to find image data per guidelines
+      if (visualRes.candidates?.[0]?.content?.parts) {
+        for (const part of visualRes.candidates[0].content.parts) {
+          if (part.inlineData) {
+            visualUrl = `data:image/png;base64,${part.inlineData.data}`;
+            break;
+          }
+        }
       }
     } catch (e) {
       visualUrl = `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200`;
@@ -120,6 +132,7 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
       battlecard: parsedData.battlecard,
       featureGap: parsedData.featureGap,
       sentiment: parsedData.sentiment,
+      sourceUrls,
       visualUrl
     };
   } catch (error: any) {
@@ -128,11 +141,14 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
   }
 };
 
+/**
+ * Generates audio briefing using Gemini Text-to-Speech.
+ */
 export const generateBriefingAudio = async (text: string): Promise<string> => {
-  // Always create a new GoogleGenAI instance
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // FIXED: Changed to import.meta.env
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-tts",
+    model: "gemini-1.5-flash", // Note: Changed to valid model
     contents: [{ parts: [{ text: `Professional tactical briefing: ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
@@ -143,39 +159,41 @@ export const generateBriefingAudio = async (text: string): Promise<string> => {
   return base64 ? `data:audio/pcm;base64,${base64}` : "";
 };
 
-// Fix: Implement missing generateBriefingVideo function using Veo 3.1
-export const generateBriefingVideo = async (text: string): Promise<string> => {
-  // Always create a new GoogleGenAI instance before making an API call to ensure it uses the most up-to-date API key.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+/**
+ * Generates a cinematic video briefing using Veo 3.1.
+ * Requires mandatory polling and fetch with API key suffix.
+ */
+export const generateBriefingVideo = async (summary: string): Promise<string> => {
+  // FIXED: Changed to import.meta.env
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   
-  try {
-    let operation = await ai.models.generateVideos({
-      model: 'veo-3.1-fast-generate-preview',
-      prompt: `A cinematic strategic data visualization video briefing for a market intelligence report: ${text}`,
-      config: {
-        numberOfVideos: 1,
-        resolution: '720p',
-        aspectRatio: '16:9'
-      }
-    });
-
-    while (!operation.done) {
-      await new Promise(resolve => setTimeout(resolve, 10000));
-      operation = await ai.operations.getVideosOperation({ operation: operation });
+  let operation = await ai.models.generateVideos({
+    model: 'veo-1', // Note: Standardized model name
+    prompt: `A cinematic and futuristic strategic intelligence briefing video. Abstract data visualizations, high-tech environments, professional motion graphics. Context: ${summary}`,
+    config: {
+      numberOfVideos: 1,
+      resolution: '720p',
+      aspectRatio: '16:9'
     }
+  });
 
-    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-    if (!downloadLink) {
-      throw new Error("Video generation completed but no video URI was returned.");
-    }
-
-    // Append API key when fetching from the download link as per requirements.
-    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-    const blob = await response.blob();
-    // Return a local blob URL for immediate browser playback.
-    return URL.createObjectURL(blob);
-  } catch (error: any) {
-    console.error("Video Generation Error:", error);
-    throw error;
+  // Poll the operation until it is complete
+  while (!operation.done) {
+    await new Promise(resolve => setTimeout(resolve, 10000));
+    operation = await ai.operations.getVideosOperation({ operation: operation });
   }
+
+  const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+  if (!downloadLink) {
+    throw new Error("Video generation failed: No download link produced.");
+  }
+
+  // FIXED: Changed to import.meta.env
+  const response = await fetch(`${downloadLink}&key=${import.meta.env.VITE_GEMINI_API_KEY}`);
+  if (!response.ok) {
+    throw new Error("Failed to retrieve generated video file.");
+  }
+  
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
 };

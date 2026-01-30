@@ -43,9 +43,9 @@ export interface AuditResult {
   timestamp: string;
   sourceUrls?: string[];
   visualUrl?: string; 
-  audioUrl?: string; // New: TTS narrated briefing
-  videoUrl?: string; // New: Veo cinematic video briefing
-  marketPresence?: MapLocation[]; // New: Google Maps grounding data
+  audioUrl?: string; 
+  videoUrl?: string;
+  marketPresence?: MapLocation[];
 }
 
 export enum AppView {
