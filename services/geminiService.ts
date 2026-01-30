@@ -25,11 +25,12 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     throw new Error("CRITICAL: API_KEY is missing or invalid. If you just added it to Vercel, you MUST 'Redeploy' the project for changes to take effect.");
   }
 
+  // Always create a new GoogleGenAI instance right before making an API call
   const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Upgraded for complex strategic reasoning
+      model: 'gemini-3-flash-preview',
       contents: `Perform a deep forensic tactical audit for domain: ${domain}. Analyze market positioning, technology profile, and perform a detailed SWOT analysis.`,
       config: {
         systemInstruction: "You are a world-class Senior Market Intelligence Analyst. Return ONLY valid JSON. Be forensic, aggressive, and provide highly specific technical and strategic insights. Use tools to find real-time data.",
@@ -128,6 +129,7 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
 };
 
 export const generateBriefingAudio = async (text: string): Promise<string> => {
+  // Always create a new GoogleGenAI instance
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
@@ -141,19 +143,39 @@ export const generateBriefingAudio = async (text: string): Promise<string> => {
   return base64 ? `data:audio/pcm;base64,${base64}` : "";
 };
 
-export const generateBriefingVideo = async (prompt: string): Promise<string> => {
+// Fix: Implement missing generateBriefingVideo function using Veo 3.1
+export const generateBriefingVideo = async (text: string): Promise<string> => {
+  // Always create a new GoogleGenAI instance before making an API call to ensure it uses the most up-to-date API key.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  let operation = await ai.models.generateVideos({
-    model: 'veo-3.1-fast-generate-preview',
-    prompt: `Cinematic strategic intelligence summary visualization for ${prompt}`,
-    config: { numberOfVideos: 1, resolution: '720p', aspectRatio: '16:9' }
-  });
-  while (!operation.done) {
-    await new Promise(r => setTimeout(r, 10000));
-    operation = await ai.operations.getVideosOperation({ operation });
+  
+  try {
+    let operation = await ai.models.generateVideos({
+      model: 'veo-3.1-fast-generate-preview',
+      prompt: `A cinematic strategic data visualization video briefing for a market intelligence report: ${text}`,
+      config: {
+        numberOfVideos: 1,
+        resolution: '720p',
+        aspectRatio: '16:9'
+      }
+    });
+
+    while (!operation.done) {
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      operation = await ai.operations.getVideosOperation({ operation: operation });
+    }
+
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) {
+      throw new Error("Video generation completed but no video URI was returned.");
+    }
+
+    // Append API key when fetching from the download link as per requirements.
+    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const blob = await response.blob();
+    // Return a local blob URL for immediate browser playback.
+    return URL.createObjectURL(blob);
+  } catch (error: any) {
+    console.error("Video Generation Error:", error);
+    throw error;
   }
-  const link = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const res = await fetch(`${link}&key=${process.env.API_KEY}`);
-  const blob = await res.blob();
-  return URL.createObjectURL(blob);
 };

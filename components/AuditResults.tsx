@@ -6,7 +6,6 @@ import Battlecard from './Battlecard';
 import FeatureMatrix from './FeatureMatrix';
 import ReviewAnalysis from './ReviewAnalysis';
 import TechStack from './TechStack';
-import VideoBriefing from './VideoBriefing';
 import { generateBriefingAudio } from '../services/geminiService';
 
 interface AuditResultsProps {
@@ -23,7 +22,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
 
   const tabs = [
     { id: 'overview', label: 'Summary' },
-    { id: 'media', label: 'Visual Intel' },
     { id: 'battlecard', label: 'Offense Strategy' },
     { id: 'features', label: 'Feature Matrix' },
     { id: 'sentiment', label: 'Sentiment' },
@@ -41,20 +39,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
     } finally {
         setIsAudioLoading(false);
     }
-  };
-
-  const handleVideoGenerated = (url: string) => {
-      const updatedAudit = { ...currentAudit, videoUrl: url };
-      setCurrentAudit(updatedAudit);
-      const saved = localStorage.getItem('competeai_audits');
-      if (saved) {
-          const audits = JSON.parse(saved);
-          const index = audits.findIndex((a: any) => a.id === audit.id);
-          if (index !== -1) {
-              audits[index] = updatedAudit;
-              localStorage.setItem('competeai_audits', JSON.stringify(audits));
-          }
-      }
   };
 
   return (
@@ -164,7 +148,6 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
           </div>
         )}
 
-        {activeTab === 'media' && <div className="animate-in fade-in duration-500 w-full"><VideoBriefing audit={currentAudit} onVideoGenerated={handleVideoGenerated} /></div>}
         {activeTab === 'battlecard' && <div className="animate-in slide-in-from-bottom-4 duration-500 w-full"><Battlecard data={currentAudit.battlecard} companyName={currentAudit.companyName} /></div>}
         {activeTab === 'features' && <div className="animate-in fade-in duration-500 w-full"><FeatureMatrix features={currentAudit.featureGap} /></div>}
         {activeTab === 'sentiment' && <div className="animate-in fade-in duration-500 w-full"><ReviewAnalysis sentiment={currentAudit.sentiment} /></div>}

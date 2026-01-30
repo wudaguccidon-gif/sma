@@ -1,3 +1,4 @@
+
 export interface SWOTData {
   strengths: string[];
   weaknesses: string[];
@@ -42,8 +43,8 @@ export interface AuditResult {
   timestamp: string;
   sourceUrls?: string[];
   visualUrl?: string; 
-  videoUrl?: string;
   audioUrl?: string; // New: TTS narrated briefing
+  videoUrl?: string; // New: Veo cinematic video briefing
   marketPresence?: MapLocation[]; // New: Google Maps grounding data
 }
 
