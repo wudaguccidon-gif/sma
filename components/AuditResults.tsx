@@ -22,10 +22,10 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
 
   const tabs = [
     { id: 'overview', label: 'Summary' },
-    { id: 'battlecard', label: 'Offense Strategy' },
-    { id: 'features', label: 'Feature Matrix' },
+    { id: 'battlecard', label: 'Strategy' },
+    { id: 'features', label: 'Matrix' },
     { id: 'sentiment', label: 'Sentiment' },
-    { id: 'tech', label: 'Tech Stack' },
+    { id: 'tech', label: 'Tech' },
   ];
 
   const handleAudioBriefing = async () => {
@@ -42,13 +42,13 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
   };
 
   return (
-    <div className="w-full space-y-6 py-4">
+    <div className="w-full space-y-4 md:space-y-6 py-2 md:py-4">
       {currentAudit.visualUrl && (
-        <div className="relative w-full h-48 md:h-80 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl mb-6 group">
+        <div className="relative w-full h-40 md:h-80 rounded-2xl md:rounded-3xl overflow-hidden border border-slate-800 shadow-2xl mb-4 md:mb-6 group">
           <img src={currentAudit.visualUrl} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105" alt="Strategic Visual" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
-          <div className="absolute bottom-6 left-8 flex items-end space-x-6">
-            <div className="w-20 h-20 md:w-28 md:h-28 bg-black/80 backdrop-blur-md border border-slate-700 p-2 rounded-2xl shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          <div className="absolute bottom-4 left-4 md:bottom-6 md:left-8 flex items-end space-x-3 md:space-x-6">
+            <div className="w-14 h-14 md:w-28 md:h-28 bg-black/80 backdrop-blur-md border border-slate-700 p-1.5 md:p-2 rounded-xl md:rounded-2xl shadow-2xl shrink-0">
                 <img 
                   src={`https://logo.clearbit.com/${currentAudit.domain}`} 
                   className="w-full h-full object-contain rounded-lg"
@@ -56,88 +56,87 @@ const AuditResults: React.FC<AuditResultsProps> = ({ audit, activeTab, onTabChan
                   alt={currentAudit.companyName}
                 />
             </div>
-            <div className="pb-2">
-                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">{currentAudit.companyName}</h1>
-                <p className="text-indigo-400 font-black text-[10px] md:text-xs tracking-[0.4em] uppercase mt-3">Sector Analysis: {currentAudit.industry}</p>
+            <div className="pb-1">
+                <h1 className="text-xl md:text-5xl font-black text-white tracking-tighter uppercase leading-tight md:leading-none truncate max-w-[200px] sm:max-w-none">{currentAudit.companyName}</h1>
+                <p className="text-indigo-400 font-black text-[8px] md:text-xs tracking-[0.2em] md:tracking-[0.4em] uppercase mt-1 md:mt-3">Sector: {currentAudit.industry}</p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-800 pb-6">
-        <div className="flex flex-wrap gap-2">
-            <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">Target: {currentAudit.domain}</span>
-            <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[9px] font-black text-indigo-400 uppercase tracking-widest">Signal: Optimal</span>
-            <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">Status: Classified</span>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-4 md:pb-6">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
+            <span className="px-2 py-0.5 md:px-3 md:py-1 bg-slate-900 border border-slate-800 rounded-full text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest">{currentAudit.domain}</span>
+            <span className="px-2 py-0.5 md:px-3 md:py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[8px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest">Signal: Opt</span>
         </div>
 
-        <div className="flex space-x-3">
+        <div className="flex space-x-2 w-full sm:w-auto">
           <button 
             onClick={handleAudioBriefing}
             disabled={isAudioLoading}
-            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center shadow-lg shadow-indigo-500/10 active:scale-95"
+            className="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 text-white rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center shadow-lg shadow-indigo-500/10 active:scale-95"
           >
             {isAudioLoading ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-volume-high mr-2"></i>}
-            {currentAudit.audioUrl ? 'Briefing Active' : 'Start Audio Intel'}
+            {currentAudit.audioUrl ? 'Briefing Active' : 'Start Intel'}
           </button>
           {!hideTabs && onPrint && (
              <button 
                onClick={onPrint}
-               className="px-5 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95"
+               className="flex-1 sm:flex-none px-4 py-2 bg-white text-black rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95"
              >
-               Export PDF
+               Export
              </button>
           )}
         </div>
       </div>
 
       {currentAudit.audioUrl && (
-          <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-4 flex items-center space-x-6 animate-in slide-in-from-top-4">
-             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-indigo-600/20">
-                <i className="fa-solid fa-waveform"></i>
+          <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center space-x-4 md:space-x-6 animate-in slide-in-from-top-4">
+             <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-xl shrink-0">
+                <i className="fa-solid fa-waveform text-xs md:text-base"></i>
              </div>
-             <div className="flex-1">
-                <audio src={currentAudit.audioUrl} controls className="w-full h-8 custom-audio" />
+             <div className="flex-1 min-w-0">
+                <audio src={currentAudit.audioUrl} controls className="w-full h-7 md:h-8 custom-audio" />
              </div>
           </div>
       )}
 
       {!hideTabs && (
-        <div className="flex space-x-8 border-b border-slate-800 sticky top-14 bg-black z-30 w-full overflow-x-auto no-scrollbar">
+        <div className="flex space-x-6 md:space-x-8 border-b border-slate-800 sticky top-14 bg-black z-30 w-full overflow-x-auto no-scrollbar scroll-smooth">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`py-4 text-[11px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${
+              className={`py-3 md:py-4 text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap shrink-0 ${
                 activeTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab.label}
-              {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-indigo-500 shadow-[0_-4px_10px_rgba(99,102,241,0.5)]"></div>}
+              {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] md:h-[3px] bg-indigo-500 shadow-[0_-4px_10px_rgba(99,102,241,0.5)]"></div>}
             </button>
           ))}
         </div>
       )}
 
-      <div className="mt-8 pb-20 w-full">
+      <div className="mt-4 md:mt-8 pb-10 md:pb-20 w-full">
         {activeTab === 'overview' && (
-          <div className="space-y-8 animate-in fade-in duration-500 w-full">
-            <div className="bg-slate-950/50 border border-slate-800 rounded-3xl p-10 relative overflow-hidden group w-full">
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 w-full">
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl md:rounded-3xl p-6 md:p-10 relative overflow-hidden group w-full">
                 <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/50 group-hover:w-full group-hover:opacity-5 transition-all duration-700"></div>
-                <div className="flex items-center space-x-3 mb-6">
-                    <div className="h-1 w-6 bg-indigo-500 rounded-full"></div>
-                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Forensic Summary</span>
+                <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
+                    <div className="h-0.5 w-4 md:w-6 bg-indigo-500 rounded-full"></div>
+                    <span className="text-[8px] md:text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] md:tracking-[0.4em]">Forensic Summary</span>
                 </div>
-                <p className="text-slate-200 text-xl md:text-2xl leading-relaxed font-bold tracking-tight italic">
+                <p className="text-slate-200 text-base md:text-2xl leading-relaxed font-bold tracking-tight italic">
                     "{currentAudit.summary}"
                 </p>
             </div>
             
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start w-full">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8 items-start w-full">
               <div className="xl:col-span-2 w-full">
                 <SWOTCard swot={currentAudit.swot} />
               </div>
-              <div className="space-y-8 w-full">
+              <div className="space-y-6 md:space-y-8 w-full">
                 <TechStack stack={currentAudit.techStack} />
               </div>
             </div>

@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -16,24 +17,19 @@ const extractJson = (text: string): any => {
   }
 };
 
-/**
- * Performs a deep forensic tactical audit using Gemini 3 Pro.
- * Incorporates real-time grounding via Google Search.
- */
 export const performCompetitorAudit = async (domain: string): Promise<AuditResult> => {
-  // FIXED: Changed from process.env to import.meta.env for Vite/Vercel
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  // Use process.env.API_KEY as strictly required by instructions
+  const apiKey = process.env.API_KEY;
   
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
-    throw new Error("CRITICAL: API_KEY is missing or invalid. Set it in environment variables.");
+    throw new Error("CRITICAL: API_KEY is missing. Add it to Vercel Environment Variables and redeploy.");
   }
 
-  // Create new instance for each call to ensure fresh state
   const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-pro', // Note: You may need to change 'gemini-3-pro-preview' to 'gemini-1.5-pro' if it fails
+      model: 'gemini-3-pro-preview', 
       contents: `Perform a deep forensic tactical audit for domain: ${domain}. Analyze market positioning, technology profile, and perform a detailed SWOT analysis.`,
       config: {
         systemInstruction: "You are a world-class Senior Market Intelligence Analyst. Return ONLY valid JSON. Be forensic, aggressive, and provide highly specific technical and strategic insights. Use tools to find real-time data.",
@@ -96,18 +92,15 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
     });
 
     const parsedData = extractJson(response.text || "{}");
-
-    // Extract grounding URLs from metadata
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sourceUrls = groundingChunks?.map((chunk: any) => chunk.web?.uri).filter((uri: any) => typeof uri === 'string') || [];
 
     let visualUrl = "";
     try {
       const visualRes = await ai.models.generateContent({
-        model: 'gemini-1.5-flash', // Note: Changed from 'gemini-2.5-flash-image'
+        model: 'gemini-2.5-flash-image',
         contents: { parts: [{ text: `Cinematic high-tech futuristic headquarters for ${parsedData.companyName || domain}. Neon accents, hyper-modern, architectural photography.` }] }
       });
-      // Correctly iterate through parts to find image data per guidelines
       if (visualRes.candidates?.[0]?.content?.parts) {
         for (const part of visualRes.candidates[0].content.parts) {
           if (part.inlineData) {
@@ -141,14 +134,10 @@ export const performCompetitorAudit = async (domain: string): Promise<AuditResul
   }
 };
 
-/**
- * Generates audio briefing using Gemini Text-to-Speech.
- */
 export const generateBriefingAudio = async (text: string): Promise<string> => {
-  // FIXED: Changed to import.meta.env
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash", // Note: Changed to valid model
+    model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text: `Professional tactical briefing: ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
@@ -159,41 +148,39 @@ export const generateBriefingAudio = async (text: string): Promise<string> => {
   return base64 ? `data:audio/pcm;base64,${base64}` : "";
 };
 
-/**
- * Generates a cinematic video briefing using Veo 3.1.
- * Requires mandatory polling and fetch with API key suffix.
- */
+// Fix: Added generateBriefingVideo to support cinematic video generation for competitor audits
 export const generateBriefingVideo = async (summary: string): Promise<string> => {
-  // FIXED: Changed to import.meta.env
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  // Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  let operation = await ai.models.generateVideos({
-    model: 'veo-1', // Note: Standardized model name
-    prompt: `A cinematic and futuristic strategic intelligence briefing video. Abstract data visualizations, high-tech environments, professional motion graphics. Context: ${summary}`,
-    config: {
-      numberOfVideos: 1,
-      resolution: '720p',
-      aspectRatio: '16:9'
+  try {
+    let operation = await ai.models.generateVideos({
+      model: 'veo-3.1-fast-generate-preview',
+      prompt: `Cinematic tactical intelligence briefing: ${summary}. High-tech motion graphics, futuristic environment, data streams, professional tone.`,
+      config: {
+        numberOfVideos: 1,
+        resolution: '720p',
+        aspectRatio: '16:9'
+      }
+    });
+
+    // Video generation takes time, so we poll for completion
+    while (!operation.done) {
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      operation = await ai.operations.getVideosOperation({ operation: operation });
     }
-  });
 
-  // Poll the operation until it is complete
-  while (!operation.done) {
-    await new Promise(resolve => setTimeout(resolve, 10000));
-    operation = await ai.operations.getVideosOperation({ operation: operation });
-  }
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) {
+      throw new Error("Rendering failed: Tactical video URI was not produced.");
+    }
 
-  const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  if (!downloadLink) {
-    throw new Error("Video generation failed: No download link produced.");
+    // The response.body contains the MP4 bytes. Must append an API key when fetching from the download link.
+    const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const blob = await videoResponse.blob();
+    return URL.createObjectURL(blob);
+  } catch (error: any) {
+    console.error("generateBriefingVideo error:", error);
+    throw error;
   }
-
-  // FIXED: Changed to import.meta.env
-  const response = await fetch(`${downloadLink}&key=${import.meta.env.VITE_GEMINI_API_KEY}`);
-  if (!response.ok) {
-    throw new Error("Failed to retrieve generated video file.");
-  }
-  
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AppView, AuditResult } from '../types';
 
@@ -9,7 +10,8 @@ interface SidebarProps {
   selectedId: string | null;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onPrintAll?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -18,12 +20,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   audits, 
   onSelectAudit, 
   selectedId, 
-  activeTab, 
-  onTabChange,
-  onPrintAll
+  isOpen,
+  onClose
 }) => {
   return (
-    <div className="w-full lg:w-64 bg-black h-full flex flex-col border-r border-slate-800">
+    <div className={`
+      fixed inset-y-0 left-0 z-50 w-72 bg-black border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
+      <div className="flex items-center justify-between p-6 lg:hidden">
+        <span className="text-sm font-black text-white uppercase tracking-widest">Navigation</span>
+        <button onClick={onClose} className="p-2 text-slate-400 hover:text-white">
+          <i className="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
       <div className="p-6">
         <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">General</h2>
         <nav className="space-y-1">
@@ -42,11 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project History</h2>
-          {onPrintAll && audits.length > 0 && (
-            <button onClick={onPrintAll} className="text-[10px] text-slate-600 hover:text-white font-bold uppercase transition-colors">
-              Archive
-            </button>
-          )}
         </div>
         
         <div className="space-y-1">
@@ -67,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <span className="truncate">{audit.companyName}</span>
             </button>
           ))}
+          {audits.length === 0 && <p className="text-[10px] text-slate-700 italic px-3">No active reports</p>}
         </div>
       </div>
 

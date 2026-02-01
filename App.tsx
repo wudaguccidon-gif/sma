@@ -11,10 +11,9 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
   const [audits, setAudits] = useState<AuditResult[]>([]);
   const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeAuditTab, setActiveAuditTab] = useState('overview');
 
-  // Persist and Load Audits from local storage
   useEffect(() => {
     const saved = localStorage.getItem('competeai_audits');
     if (saved) {
@@ -37,6 +36,7 @@ const App: React.FC = () => {
     setSelectedAuditId(result.id);
     setActiveAuditTab('overview');
     setCurrentView(AppView.AUDIT_DETAIL);
+    setIsSidebarOpen(false);
   };
 
   const handleDeleteAudit = (id: string) => {
@@ -52,27 +52,39 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-black text-slate-200">
       <Navbar 
-        onNewAudit={() => setCurrentView(AppView.NEW_AUDIT)}
-        setView={setCurrentView}
-        toggleMenu={() => setIsMenuOpen(!isMenuOpen)}
+        onNewAudit={() => {
+          setCurrentView(AppView.NEW_AUDIT);
+          setIsSidebarOpen(false);
+        }}
+        setView={(view) => {
+          setCurrentView(view);
+          setIsSidebarOpen(false);
+        }}
+        toggleMenu={() => setIsSidebarOpen(!isSidebarOpen)}
       />
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar 
           currentView={currentView}
-          setView={setCurrentView}
+          setView={(view) => {
+            setCurrentView(view);
+            setIsSidebarOpen(false);
+          }}
           audits={audits}
           onSelectAudit={(id) => {
             setSelectedAuditId(id);
             setCurrentView(AppView.AUDIT_DETAIL);
             setActiveAuditTab('overview');
+            setIsSidebarOpen(false);
           }}
           selectedId={selectedAuditId}
           activeTab={activeAuditTab}
           onTabChange={setActiveAuditTab}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
         
-        <main className="flex-1 overflow-y-auto bg-black p-4 sm:p-10 custom-scrollbar relative bg-grid">
+        <main className="flex-1 overflow-y-auto bg-black p-4 md:p-10 custom-scrollbar relative bg-grid">
           {currentView === AppView.DASHBOARD && (
             <Dashboard 
               audits={audits}
@@ -101,6 +113,14 @@ const App: React.FC = () => {
             />
           )}
         </main>
+
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
       </div>
     </div>
   );
